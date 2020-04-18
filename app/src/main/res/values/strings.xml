@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MyNotepad</string>
+    <string name="no_notes">There are no notes yet</string>
 </resources>
