@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey;
 
 import java.util.Date;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

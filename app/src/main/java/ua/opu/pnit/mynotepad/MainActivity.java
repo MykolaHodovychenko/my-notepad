@@ -2,6 +2,7 @@ package ua.opu.pnit.mynotepad;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,7 +24,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ua.opu.pnit.mynotepad.model.Note;
-import ua.opu.pnit.mynotepad.repository.AppDatabase;
 
 public class MainActivity extends AppCompatActivity implements NotesAdapter.NotesAdapterListener {
 
@@ -46,6 +46,11 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
     private void initViewModel() {
         mViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(MainViewModel.class);
+
+        LiveData<List<Note>> notes = mViewModel.getData();
+        notes.observe(this, data -> {
+            mNotesRV.setAdapter(new NotesAdapter(this, this, data));
+        });
     }
 
     private void initRecyclerView() {
@@ -69,12 +74,6 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        mNotesRV.setAdapter(new NotesAdapter(this, this, mViewModel.getAllNotes()));
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
     }
@@ -89,6 +88,5 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     @Override
     public void onNoteDelete(int id) {
         mViewModel.deleteNote(id);
-        mNotesRV.setAdapter(new NotesAdapter(this, this, mViewModel.getAllNotes()));
     }
 }

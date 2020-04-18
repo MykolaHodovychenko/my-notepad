@@ -2,6 +2,9 @@ package ua.opu.pnit.mynotepad.repository;
 
 import android.content.Context;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,19 +32,8 @@ public class AppRepository {
         db = AppDatabase.getInstance(context);
     }
 
-    public List<Note> getAllNotes() {
-        List<Note> notes = new ArrayList<>();
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        Future<List<Note>> result = es.submit(() -> db.noteDAO().getAll());
-
-        try {
-            notes = result.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        es.shutdown();
-
-        return notes;
+    public LiveData<List<Note>> getAllNotes() {
+        return db.noteDAO().getAll();
     }
 
     public void deleteNoteById(int note_id) {

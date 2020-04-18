@@ -1,5 +1,6 @@
 package ua.opu.pnit.mynotepad.repository;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -29,5 +30,5 @@ public interface NoteDAO {
     void deleteAll();
 
     @Query("SELECT * FROM notes ORDER BY dateUpdate DESC")
-    List<Note> getAll();
+    LiveData<List<Note>> getAll();
 }
