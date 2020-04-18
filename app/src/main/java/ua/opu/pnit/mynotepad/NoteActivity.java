@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -36,9 +37,9 @@ public class NoteActivity extends AppCompatActivity {
     @BindView(R.id.toolbar)
     MaterialToolbar mToolbar;
 
-    Note mNote;
+    private Note mNote;
 
-    private AppDatabase db;
+    private NoteViewModel mViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,22 +47,22 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         ButterKnife.bind(this);
-        db = AppDatabase.getInstance(this);
 
+        initViewModel();
         initWindowConfiguration();
         getIntentData();
 
-        mToolbar.setNavigationOnClickListener(view -> {
-            finish();
-        });
+        mToolbar.setNavigationOnClickListener(view -> finish());
 
         if (mEditMode) {
-            Executors.newSingleThreadExecutor().execute(() -> {
-                mNote = db.noteDAO().getNoteById(mNoteId);
-                if (mNote != null)
-                    runOnUiThread(this::populateViews);
-            });
+            mNote = mViewModel.getNoteById(mNoteId);
+            if (mNote != null)
+                runOnUiThread(this::populateViews);
         }
+    }
+
+    private void initViewModel() {
+        mViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(NoteViewModel.class);
     }
 
     private void populateViews() {
@@ -101,9 +102,7 @@ public class NoteActivity extends AppCompatActivity {
             note = new Note(title, text, now, now);
         }
 
-        Executors.newSingleThreadExecutor().execute(() -> {
-            db.noteDAO().insertNote(note);
-        });
+        mViewModel.insertNote(note);
         finish();
     }
 

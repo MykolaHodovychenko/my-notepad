@@ -2,6 +2,7 @@ package ua.opu.pnit.mynotepad;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,8 +30,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     @BindView(R.id.notes_rv)
     RecyclerView mNotesRV;
 
-    private AppDatabase db;
-    private Executor executor = Executors.newSingleThreadExecutor();
+    private MainViewModel mViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +38,14 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-        db = AppDatabase.getInstance(this);
 
+        initViewModel();
         initWindowConfiguration();
         initRecyclerView();
+    }
+
+    private void initViewModel() {
+        mViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(MainViewModel.class);
     }
 
     private void initRecyclerView() {
@@ -67,11 +71,12 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     @Override
     protected void onStart() {
         super.onStart();
+        mNotesRV.setAdapter(new NotesAdapter(this, this, mViewModel.getAllNotes()));
+    }
 
-        executor.execute(() -> {
-            List<Note> notes = new ArrayList<>(db.noteDAO().getAll());
-            runOnUiThread(() -> mNotesRV.setAdapter(new NotesAdapter(this, this, notes)));
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -83,12 +88,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
     @Override
     public void onNoteDelete(int id) {
-        executor.execute(() -> {
-            db.noteDAO().deleteNoteById(id);
-            List<Note> notes = new ArrayList<>(db.noteDAO().getAll());
-
-            runOnUiThread(() -> mNotesRV.setAdapter(new NotesAdapter(this, this, notes)));
-        });
-
+        mViewModel.deleteNote(id);
+        mNotesRV.setAdapter(new NotesAdapter(this, this, mViewModel.getAllNotes()));
     }
 }
