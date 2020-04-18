@@ -13,11 +13,14 @@ import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ua.opu.pnit.mynotepad.model.Note;
+import ua.opu.pnit.mynotepad.repository.AppDatabase;
 
 public class NoteActivity extends AppCompatActivity {
 
@@ -35,12 +38,16 @@ public class NoteActivity extends AppCompatActivity {
 
     Note mNote;
 
+    private AppDatabase db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
 
         ButterKnife.bind(this);
+        db = AppDatabase.getInstance(this);
+
         initWindowConfiguration();
         getIntentData();
 
@@ -49,13 +56,11 @@ public class NoteActivity extends AppCompatActivity {
         });
 
         if (mEditMode) {
-            for (Note note : MyNotepad.getInstance().notes) {
-                if (note.getId() == mNoteId) {
-                    mNote = note;
-                    populateViews();
-                    return;
-                }
-            }
+            Executors.newSingleThreadExecutor().execute(() -> {
+                mNote = db.noteDAO().getNoteById(mNoteId);
+                if (mNote != null)
+                    runOnUiThread(this::populateViews);
+            });
         }
     }
 
@@ -84,12 +89,21 @@ public class NoteActivity extends AppCompatActivity {
         String title = mTitle.getText().toString();
         String text = mText.getText().toString();
 
+        Note note;
+        Date now = Calendar.getInstance().getTime();
+
         if (mEditMode) {
-            mNote.setTitle(title);
-            mNote.setContents(text);
+            note = mNote;
+            note.setDateUpdate(now);
+            note.setTitle(title);
+            note.setContents(text);
         } else {
-            MyNotepad.getInstance().notes.add(new Note(MyNotepad.getInstance().notes.size(), title, text, Calendar.getInstance().getTime(), Calendar.getInstance().getTime()));
+            note = new Note(title, text, now, now);
         }
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            db.noteDAO().insertNote(note);
+        });
         finish();
     }
 

@@ -26,7 +26,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public interface NotesAdapterListener {
         void onNoteEdit(int note_id);
 
-        void onNoteDelete(int position);
+        void onNoteDelete(int note_id);
     }
 
     private Context context;
@@ -86,7 +86,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         });
 
         holder.delete.setOnClickListener(view -> {
-            listener.onNoteDelete(pos);
+            listener.onNoteDelete(note.getId());
         });
     }
 

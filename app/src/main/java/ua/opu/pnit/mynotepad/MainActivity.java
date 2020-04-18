@@ -13,14 +13,24 @@ import android.view.WindowManager;
 
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ua.opu.pnit.mynotepad.model.Note;
+import ua.opu.pnit.mynotepad.repository.AppDatabase;
 
 public class MainActivity extends AppCompatActivity implements NotesAdapter.NotesAdapterListener {
 
     @BindView(R.id.notes_rv)
     RecyclerView mNotesRV;
+
+    private AppDatabase db;
+    private Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
+        db = AppDatabase.getInstance(this);
 
         initWindowConfiguration();
         initRecyclerView();
@@ -35,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
 
     private void initRecyclerView() {
         mNotesRV.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-        mNotesRV.setAdapter(new NotesAdapter(this, this, MyNotepad.getInstance().notes));
     }
 
     public void initWindowConfiguration() {
@@ -58,7 +68,10 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     protected void onStart() {
         super.onStart();
 
-        mNotesRV.setAdapter(new NotesAdapter(this, this, MyNotepad.getInstance().notes));
+        executor.execute(() -> {
+            List<Note> notes = new ArrayList<>(db.noteDAO().getAll());
+            runOnUiThread(() -> mNotesRV.setAdapter(new NotesAdapter(this, this, notes)));
+        });
     }
 
     @Override
@@ -69,15 +82,13 @@ public class MainActivity extends AppCompatActivity implements NotesAdapter.Note
     }
 
     @Override
-    public void onNoteDelete(int position) {
-        MyNotepad.getInstance().notes.remove(position);
+    public void onNoteDelete(int id) {
+        executor.execute(() -> {
+            db.noteDAO().deleteNoteById(id);
+            List<Note> notes = new ArrayList<>(db.noteDAO().getAll());
 
-        if (!MyNotepad.getInstance().notes.isEmpty()) {
-            mNotesRV.getAdapter().notifyItemRemoved(position);
-            mNotesRV.getAdapter().notifyItemRangeChanged(position, MyNotepad.getInstance().notes.size() - position);
-        } else {
-            mNotesRV.setAdapter(new NotesAdapter(this, this, MyNotepad.getInstance().notes));
-            mNotesRV.invalidate();
-        }
+            runOnUiThread(() -> mNotesRV.setAdapter(new NotesAdapter(this, this, notes)));
+        });
+
     }
 }
