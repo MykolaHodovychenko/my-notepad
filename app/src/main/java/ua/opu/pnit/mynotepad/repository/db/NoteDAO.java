@@ -1,4 +1,4 @@
-package ua.opu.pnit.mynotepad.repository;
+package ua.opu.pnit.mynotepad.repository.db;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

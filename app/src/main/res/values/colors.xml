@@ -3,9 +3,11 @@
     <color name="primaryColor">#0277bd</color>
     <color name="primaryLightColor">#58a5f0</color>
     <color name="primaryDarkColor">#004c8c</color>
-    <color name="secondaryColor">#dd2c00</color>
-    <color name="secondaryLightColor">#ff6434</color>
-    <color name="secondaryDarkColor">#a30000</color>
+    <color name="secondaryColor">#ff8a80</color>
+    <color name="secondaryLightColor">#ffbcaf</color>
+    <color name="secondaryDarkColor">#c85a54</color>
     <color name="primaryTextColor">#ffffff</color>
-    <color name="secondaryTextColor">#ffffff</color>
+    <color name="secondaryTextColor">#000000</color>
+
+    <color name="mtrl_textinput_default_box_stroke_color">@color/secondaryDarkColor</color>
 </resources>

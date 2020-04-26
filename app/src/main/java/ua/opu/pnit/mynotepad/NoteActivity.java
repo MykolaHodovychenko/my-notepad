@@ -15,13 +15,11 @@ import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ua.opu.pnit.mynotepad.model.Note;
-import ua.opu.pnit.mynotepad.repository.AppDatabase;
 
 public class NoteActivity extends AppCompatActivity {
 

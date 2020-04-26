@@ -5,21 +5,23 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import ua.opu.pnit.mynotepad.model.Note;
+import ua.opu.pnit.mynotepad.repository.db.AppDatabase;
+import ua.opu.pnit.mynotepad.repository.retrofit.RetrofitController;
 
 public class AppRepository {
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private static AppRepository instance;
     private AppDatabase db;
+
+    private RetrofitController retrofit;
 
     public static AppRepository getInstance(Context context) {
         if (instance == null) {
@@ -30,6 +32,7 @@ public class AppRepository {
 
     private AppRepository(Context context) {
         db = AppDatabase.getInstance(context);
+        retrofit = new RetrofitController();
     }
 
     public LiveData<List<Note>> getAllNotes() {
@@ -56,5 +59,13 @@ public class AppRepository {
         } finally {
             es.shutdown();
         }
+    }
+
+    public void checkToken(MutableLiveData<Boolean> authResult) {
+        retrofit.checkToken(authResult);
+    }
+
+    public void loginAttempt(String username, String password, MutableLiveData<Boolean> loginResult) {
+        retrofit.loginAttempt(username, password, loginResult);
     }
 }
